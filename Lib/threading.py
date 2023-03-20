@@ -29,7 +29,7 @@ __all__ = ['get_ident', 'active_count', 'Condition', 'current_thread',
            'Barrier', 'BrokenBarrierError', 'Timer', 'ThreadError',
            'setprofile', 'settrace', 'local', 'stack_size',
            'excepthook', 'ExceptHookArgs', 'gettrace', 'getprofile',
-           'setprofile_all_threads','settrace_all_threads']
+           'setprofile_all_threads', 'settrace_all_threads']
 
 # Rename some stuff so "from threading import *" is safe
 _start_new_thread = _thread.start_new_thread
@@ -57,14 +57,18 @@ del _thread
 _profile_hook = None
 _trace_hook = None
 
+
 def setprofile(func):
-    """Set a profile function for all threads started from the threading module.
+    """Set a profile function for all threads started from the threading
+    module.
 
     The func will be passed to sys.setprofile() for each thread, before its
     run() method is called.
+
     """
     global _profile_hook
     _profile_hook = func
+
 
 def setprofile_all_threads(func):
     """Set a profile function for all threads started from the threading module
@@ -76,9 +80,11 @@ def setprofile_all_threads(func):
     setprofile(func)
     _sys._setprofileallthreads(func)
 
+
 def getprofile():
     """Get the profiler function as set by threading.setprofile()."""
     return _profile_hook
+
 
 def settrace(func):
     """Set a trace function for all threads started from the threading module.
@@ -88,6 +94,7 @@ def settrace(func):
     """
     global _trace_hook
     _trace_hook = func
+
 
 def settrace_all_threads(func):
     """Set a trace function for all threads started from the threading module
@@ -99,13 +106,16 @@ def settrace_all_threads(func):
     settrace(func)
     _sys._settraceallthreads(func)
 
+
 def gettrace():
     """Get the trace function as set by threading.settrace()."""
     return _trace_hook
 
+
 # Synchronization classes
 
 Lock = _allocate_lock
+
 
 def RLock(*args, **kwargs):
     """Factory function that returns a new reentrant lock.
@@ -119,6 +129,7 @@ def RLock(*args, **kwargs):
     if _CRLock is None:
         return _PyRLock(*args, **kwargs)
     return _CRLock(*args, **kwargs)
+
 
 class _RLock:
     """This class implements reentrant lock objects.
@@ -159,25 +170,25 @@ class _RLock:
         """Acquire a lock, blocking or non-blocking.
 
         When invoked without arguments: if this thread already owns the lock,
-        increment the recursion level by one, and return immediately. Otherwise,
-        if another thread owns the lock, block until the lock is unlocked. Once
-        the lock is unlocked (not owned by any thread), then grab ownership, set
-        the recursion level to one, and return. If more than one thread is
-        blocked waiting until the lock is unlocked, only one at a time will be
-        able to grab ownership of the lock. There is no return value in this
-        case.
+        increment the recursion level by one, and return
+        immediately. Otherwise, if another thread owns the lock, block until
+        the lock is unlocked. Once the lock is unlocked (not owned by any
+        thread), then grab ownership, set the recursion level to one, and
+        return. If more than one thread is blocked waiting until the lock is
+        unlocked, only one at a time will be able to grab ownership of the
+        lock. There is no return value in this case.
 
         When invoked with the blocking argument set to true, do the same thing
         as when called without arguments, and return true.
 
-        When invoked with the blocking argument set to false, do not block. If a
-        call without an argument would block, return false immediately;
+        When invoked with the blocking argument set to false, do not block. If
+        a call without an argument would block, return false immediately;
         otherwise, do the same thing as when called without arguments, and
         return true.
 
         When invoked with the floating-point timeout argument set to a positive
-        value, block for at most the number of seconds specified by timeout
-        and as long as the lock cannot be acquired.  Return true if the lock has
+        value, block for at most the number of seconds specified by timeout and
+        as long as the lock cannot be acquired.  Return true if the lock has
         been acquired, false if the timeout has elapsed.
 
         """
@@ -196,11 +207,11 @@ class _RLock:
     def release(self):
         """Release a lock, decrementing the recursion level.
 
-        If after the decrement it is zero, reset the lock to unlocked (not owned
-        by any thread), and if any other threads are blocked waiting for the
-        lock to become unlocked, allow exactly one of them to proceed. If after
-        the decrement the recursion level is still nonzero, the lock remains
-        locked and owned by the calling thread.
+        If after the decrement it is zero, reset the lock to unlocked (not
+        owned by any thread), and if any other threads are blocked waiting for
+        the lock to become unlocked, allow exactly one of them to proceed. If
+        after the decrement the recursion level is still nonzero, the lock
+        remains locked and owned by the calling thread.
 
         Only call this method when the calling thread owns the lock. A
         RuntimeError is raised if this method is called when the lock is
@@ -238,6 +249,7 @@ class _RLock:
     def _is_owned(self):
         return self._owner == get_ident()
 
+
 _PyRLock = _RLock
 
 
@@ -248,8 +260,8 @@ class Condition:
     notified by another thread.
 
     If the lock argument is given and not None, it must be a Lock or RLock
-    object, and it is used as the underlying lock. Otherwise, a new RLock object
-    is created and used as the underlying lock.
+    object, and it is used as the underlying lock. Otherwise, a new RLock
+    object is created and used as the underlying lock.
 
     """
 
@@ -424,9 +436,9 @@ class Condition:
 class Semaphore:
     """This class implements semaphore objects.
 
-    Semaphores manage a counter representing the number of release() calls minus
-    the number of acquire() calls, plus an initial value. The acquire() method
-    blocks if necessary until it can return without making the counter
+    Semaphores manage a counter representing the number of release() calls
+    minus the number of acquire() calls, plus an initial value. The acquire()
+    method blocks if necessary until it can return without making the counter
     negative. If not given, value defaults to 1.
 
     """
@@ -448,20 +460,20 @@ class Semaphore:
         """Acquire a semaphore, decrementing the internal counter by one.
 
         When invoked without arguments: if the internal counter is larger than
-        zero on entry, decrement it by one and return immediately. If it is zero
-        on entry, block, waiting until some other thread has called release() to
-        make it larger than zero. This is done with proper interlocking so that
-        if multiple acquire() calls are blocked, release() will wake exactly one
-        of them up. The implementation may pick one at random, so the order in
-        which blocked threads are awakened should not be relied on. There is no
-        return value in this case.
+        zero on entry, decrement it by one and return immediately. If it is
+        zero on entry, block, waiting until some other thread has called
+        release() to make it larger than zero. This is done with proper
+        interlocking so that if multiple acquire() calls are blocked, release()
+        will wake exactly one of them up. The implementation may pick one at
+        random, so the order in which blocked threads are awakened should not
+        be relied on. There is no return value in this case.
 
-        When invoked with blocking set to true, do the same thing as when called
-        without arguments, and return true.
+        When invoked with blocking set to true, do the same thing as when
+        called without arguments, and return true.
 
-        When invoked with blocking set to false, do not block. If a call without
-        an argument would block, return false immediately; otherwise, do the
-        same thing as when called without arguments, and return true.
+        When invoked with blocking set to false, do not block. If a call
+        without an argument would block, return false immediately; otherwise,
+        do the same thing as when called without arguments, and return true.
 
         When invoked with a timeout other than None, it will block for at
         most timeout seconds.  If acquire does not complete successfully in
@@ -492,7 +504,8 @@ class Semaphore:
     __enter__ = acquire
 
     def release(self, n=1):
-        """Release a semaphore, incrementing the internal counter by one or more.
+        """Release a semaphore, incrementing the internal counter by one or
+        more.
 
         When the counter is zero on entry and another thread is waiting for it
         to become larger than zero again, wake up that thread.
@@ -511,8 +524,8 @@ class Semaphore:
 class BoundedSemaphore(Semaphore):
     """Implements a bounded semaphore.
 
-    A bounded semaphore checks to make sure its current value doesn't exceed its
-    initial value. If it does, ValueError is raised. In most situations
+    A bounded semaphore checks to make sure its current value doesn't exceed
+    its initial value. If it does, ValueError is raised. In most situations
     semaphores are used to guard resources with limited capacity.
 
     If the semaphore is released too many times it's a sign of a bug. If not
@@ -535,7 +548,8 @@ class BoundedSemaphore(Semaphore):
                 f" value={self._value}/{self._initial_value}>")
 
     def release(self, n=1):
-        """Release a semaphore, incrementing the internal counter by one or more.
+        """Release a semaphore, incrementing the internal counter by one or
+        more.
 
         When the counter is zero on entry and another thread is waiting for it
         to become larger than zero again, wake up that thread.
@@ -556,9 +570,9 @@ class BoundedSemaphore(Semaphore):
 class Event:
     """Class implementing event objects.
 
-    Events manage a flag that can be set to true with the set() method and reset
-    to false with the clear() method. The wait() method blocks until the flag is
-    true.  The flag is initially false.
+    Events manage a flag that can be set to true with the set() method and
+    reset to false with the clear() method. The wait() method blocks until the
+    flag is true.  The flag is initially false.
 
     """
 
@@ -571,7 +585,8 @@ class Event:
     def __repr__(self):
         cls = self.__class__
         status = 'set' if self._flag else 'unset'
-        return f"<{cls.__module__}.{cls.__qualname__} at {id(self):#x}: {status}>"
+        return (f"<{cls.__module__}.{cls.__qualname__} at "
+                f"{id(self):#x}: {status}>")
 
     def _at_fork_reinit(self):
         # Private method called by Thread._reset_internal_locks()
@@ -606,8 +621,8 @@ class Event:
     def clear(self):
         """Reset the internal flag to false.
 
-        Subsequently, threads calling wait() will block until set() is called to
-        set the internal flag to true again.
+        Subsequently, threads calling wait() will block until set() is called
+        to set the internal flag to true again.
 
         """
         with self._cond:
@@ -617,8 +632,8 @@ class Event:
         """Block until the internal flag is true.
 
         If the internal flag is true on entry, return immediately. Otherwise,
-        block until another thread calls set() to set the flag to true, or until
-        the optional timeout occurs.
+        block until another thread calls set() to set the flag to true, or
+        until the optional timeout occurs.
 
         When the timeout argument is present and not None, it should be a
         floating point number specifying a timeout for the operation in seconds
@@ -674,7 +689,8 @@ class Barrier:
     def __repr__(self):
         cls = self.__class__
         if self.broken:
-            return f"<{cls.__module__}.{cls.__qualname__} at {id(self):#x}: broken>"
+            return (f"<{cls.__module__}.{cls.__qualname__} at "
+                    f"{id(self):#x}: broken>")
         return (f"<{cls.__module__}.{cls.__qualname__} at {id(self):#x}:"
                 f" waiters={self.n_waiting}/{self.parties}>")
 
@@ -690,7 +706,7 @@ class Barrier:
         if timeout is None:
             timeout = self._timeout
         with self._cond:
-            self._enter() # Block while the barrier drains.
+            self._enter()  # Block while the barrier drains.
             index = self._count
             self._count += 1
             try:
@@ -712,7 +728,7 @@ class Barrier:
         while self._state in (-1, 1):
             # It is draining or resetting, wait until done
             self._cond.wait()
-        #see if the barrier is in a broken state
+        # see if the barrier is in a broken state
         if self._state < 0:
             raise BrokenBarrierError
         assert self._state == 0
@@ -727,15 +743,15 @@ class Barrier:
             self._state = 1
             self._cond.notify_all()
         except:
-            #an exception during the _action handler.  Break and reraise
+            # an exception during the _action handler.  Break and reraise
             self._break()
             raise
 
     # Wait in the barrier until we are released.  Raise an exception
     # if the barrier is reset or broken.
     def _wait(self, timeout):
-        if not self._cond.wait_for(lambda : self._state != 0, timeout):
-            #timed out.  Break the barrier
+        if not self._cond.wait_for(lambda: self._state != 0, timeout):
+            # timed out.  Break the barrier
             self._break()
             raise BrokenBarrierError
         if self._state < 0:
@@ -747,7 +763,7 @@ class Barrier:
     def _exit(self):
         if self._count == 0:
             if self._state in (-1, 1):
-                #resetting or draining
+                # resetting or draining
                 self._state = 0
                 self._cond.notify_all()
 
@@ -761,11 +777,11 @@ class Barrier:
         with self._cond:
             if self._count > 0:
                 if self._state == 0:
-                    #reset the barrier, waking up threads
+                    # reset the barrier, waking up threads
                     self._state = -1
                 elif self._state == -2:
-                    #was broken, set it to reset state
-                    #which clears when the last thread exits
+                    # was broken, set it to reset state
+                    # which clears when the last thread exits
                     self._state = -1
             else:
                 self._state = 0
@@ -806,6 +822,7 @@ class Barrier:
         """Return True if the barrier is in a broken state."""
         return self._state == -2
 
+
 # exception raised by the Barrier class
 class BrokenBarrierError(RuntimeError):
     pass
@@ -813,8 +830,11 @@ class BrokenBarrierError(RuntimeError):
 
 # Helper to generate new thread names
 _counter = _count(1).__next__
+
+
 def _newname(name_template):
     return name_template % _counter()
+
 
 # Active thread administration.
 #
@@ -825,11 +845,13 @@ _active = {}    # maps thread id to Thread object
 _limbo = {}
 _dangling = WeakSet()
 
+
 # Set of Thread._tstate_lock locks of non-daemon threads used by _shutdown()
 # to wait until all Python thread states get deleted:
 # see Thread._set_tstate_lock().
 _shutdown_locks_lock = _allocate_lock()
 _shutdown_locks = set()
+
 
 def _maintain_shutdown_locks():
     """
@@ -850,9 +872,9 @@ def _maintain_shutdown_locks():
 class Thread:
     """A class that represents a thread of control.
 
-    This class can be safely subclassed in a limited fashion. There are two ways
-    to specify the activity: by passing a callable object to the constructor, or
-    by overriding the run() method in a subclass.
+    This class can be safely subclassed in a limited fashion. There are two
+    ways to specify the activity: by passing a callable object to the
+    constructor, or by overriding the run() method in a subclass.
 
     """
 
@@ -860,10 +882,11 @@ class Thread:
 
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs=None, *, daemon=None):
-        """This constructor should always be called with keyword arguments. Arguments are:
+        """This constructor should always be called with keyword
+        arguments. Arguments are:
 
-        *group* should be None; reserved for future extension when a ThreadGroup
-        class is implemented.
+        *group* should be None; reserved for future extension when a
+        ThreadGroup class is implemented.
 
         *target* is the callable object to be invoked by the run()
         method. Defaults to None, meaning nothing is called.
@@ -871,7 +894,8 @@ class Thread:
         *name* is the thread name. By default, a unique name is constructed of
         the form "Thread-N" where N is a small decimal number.
 
-        *args* is a list or tuple of arguments for the target invocation. Defaults to ().
+        *args* is a list or tuple of arguments for the target
+         invocation. Defaults to ().
 
         *kwargs* is a dictionary of keyword arguments for the target
         invocation. Defaults to {}.
@@ -901,7 +925,8 @@ class Thread:
         self._kwargs = kwargs
         if daemon is not None:
             if daemon and not _daemon_threads_allowed():
-                raise RuntimeError('daemon threads are disabled in this (sub)interpreter')
+                raise RuntimeError(
+                    'daemon threads are disabled in this (sub)interpreter')
             self._daemonic = daemon
         else:
             self._daemonic = current_thread().daemon
@@ -940,7 +965,7 @@ class Thread:
         status = "initial"
         if self._started.is_set():
             status = "started"
-        self.is_alive() # easy way to get ._is_stopped set when appropriate
+        self.is_alive()  # easy way to get ._is_stopped set when appropriate
         if self._is_stopped:
             status = "stopped"
         if self._daemonic:
@@ -1187,7 +1212,8 @@ class Thread:
     if _HAVE_THREAD_NATIVE_ID:
         @property
         def native_id(self):
-            """Native integral thread ID of this thread, or None if it has not been started.
+            """Native integral thread ID of this thread, or None if it has not
+            been started.
 
             This is a non-negative integer. See the get_native_id() function.
             This represents the Thread ID as reported by the kernel.
@@ -1230,7 +1256,8 @@ class Thread:
         if not self._initialized:
             raise RuntimeError("Thread.__init__() not called")
         if daemonic and not _daemon_threads_allowed():
-            raise RuntimeError('daemon threads are disabled in this interpreter')
+            raise RuntimeError(
+                'daemon threads are disabled in this interpreter')
         if self._started.is_set():
             raise RuntimeError("cannot set daemon status of active thread")
         self._daemonic = daemonic
@@ -1242,8 +1269,10 @@ class Thread:
 
         """
         import warnings
-        warnings.warn('isDaemon() is deprecated, get the daemon attribute instead',
-                      DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            'isDaemon() is deprecated, get the daemon attribute instead',
+            DeprecationWarning, stacklevel=2,
+        )
         return self.daemon
 
     def setDaemon(self, daemonic):
@@ -1253,8 +1282,10 @@ class Thread:
 
         """
         import warnings
-        warnings.warn('setDaemon() is deprecated, set the daemon attribute instead',
-                      DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            'setDaemon() is deprecated, set the daemon attribute instead',
+            DeprecationWarning, stacklevel=2,
+        )
         self.daemon = daemonic
 
     def getName(self):
@@ -1264,8 +1295,10 @@ class Thread:
 
         """
         import warnings
-        warnings.warn('getName() is deprecated, get the name attribute instead',
-                      DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            'getName() is deprecated, get the name attribute instead',
+            DeprecationWarning, stacklevel=2,
+        )
         return self.name
 
     def setName(self, name):
@@ -1275,8 +1308,10 @@ class Thread:
 
         """
         import warnings
-        warnings.warn('setName() is deprecated, set the name attribute instead',
-                      DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            'setName() is deprecated, set the name attribute instead',
+            DeprecationWarning, stacklevel=2,
+        )
         self.name = name
 
 
@@ -1461,7 +1496,8 @@ class _DummyThread(Thread):
 # Global API functions
 
 def current_thread():
-    """Return the current Thread object, corresponding to the caller's thread of control.
+    """Return the current Thread object, corresponding to the caller's thread
+    of control.
 
     If the caller's thread of control was not created through the threading
     module, a dummy thread object with limited functionality is returned.
@@ -1472,16 +1508,21 @@ def current_thread():
     except KeyError:
         return _DummyThread()
 
+
 def currentThread():
-    """Return the current Thread object, corresponding to the caller's thread of control.
+    """Return the current Thread object, corresponding to the caller's thread
+    of control.
 
     This function is deprecated, use current_thread() instead.
 
     """
     import warnings
-    warnings.warn('currentThread() is deprecated, use current_thread() instead',
-                  DeprecationWarning, stacklevel=2)
+    warnings.warn(
+        'currentThread() is deprecated, use current_thread() instead',
+        DeprecationWarning, stacklevel=2,
+    )
     return current_thread()
+
 
 def active_count():
     """Return the number of Thread objects currently alive.
@@ -1495,6 +1536,7 @@ def active_count():
     with _active_limbo_lock:
         return len(_active) + len(_limbo)
 
+
 def activeCount():
     """Return the number of Thread objects currently alive.
 
@@ -1506,9 +1548,11 @@ def activeCount():
                   DeprecationWarning, stacklevel=2)
     return active_count()
 
+
 def _enumerate():
     # Same as enumerate(), but without the lock. Internal use only.
     return list(_active.values()) + list(_limbo.values())
+
 
 def enumerate():
     """Return a list of all Thread objects currently alive.
@@ -1524,6 +1568,7 @@ def enumerate():
 
 _threading_atexits = []
 _SHUTTING_DOWN = False
+
 
 def _register_atexit(func, *arg, **kwargs):
     """CPython internal: register *func* to be called before joining threads.
@@ -1549,6 +1594,7 @@ from _thread import stack_size
 # (Py_Main) as threading._shutdown.
 
 _main_thread = _MainThread()
+
 
 def _shutdown():
     """
@@ -1613,6 +1659,7 @@ def main_thread():
     Python interpreter was started.
     """
     return _main_thread
+
 
 # get thread-local implementation, either from the thread
 # module, or from the python fallback
